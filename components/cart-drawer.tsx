@@ -1,21 +1,29 @@
-"use client"
+"use client";
 
-import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
-import { Button } from "@/components/ui/button"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Separator } from "@/components/ui/separator"
-import { MinusIcon, PlusIcon, ShoppingCartIcon, TrashIcon } from "lucide-react"
-import { useCart } from "@/context/cart-context"
-import Image from "next/image"
-import Link from "next/link"
-import { useAuth } from "@/context/auth-context"
-import { useRouter } from "next/navigation"
-import { toast } from "@/components/ui/use-toast"
+import {
+  Sheet,
+  SheetContent,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
+import { MinusIcon, PlusIcon, ShoppingCartIcon, TrashIcon } from "lucide-react";
+import { useCart } from "@/context/cart-context";
+import Image from "next/image";
+import Link from "next/link";
+import { useAuth } from "@/context/auth-context";
+import { useRouter } from "next/navigation";
+import { toast } from "@/components/ui/use-toast";
 
 export default function CartDrawer() {
-  const { cartItems, getTotalItems, getTotalPrice, updateQuantity, removeFromCart, clearCart } = useCart()
-  const { isLoggedIn } = useAuth()
-  const router = useRouter()
+  const { cartItems, getTotalItems, getTotalPrice, updateQuantity, removeFromCart, clearCart } =
+    useCart();
+  const { isLoggedIn } = useAuth();
+  const router = useRouter();
 
   const handleProceedToCheckout = () => {
     if (!isLoggedIn) {
@@ -23,18 +31,18 @@ export default function CartDrawer() {
         title: "Authentication Required",
         description: "Please login or sign up to proceed to checkout.",
         variant: "destructive",
-      })
-      router.push("/login")
+      });
+      router.push("/login");
     } else {
       // In a real app, navigate to checkout page
       toast({
         title: "Proceeding to Checkout",
         description: "You are logged in and ready to checkout!",
         variant: "default",
-      })
-      console.log("User logged in, proceeding to checkout...")
+      });
+      console.log("User logged in, proceeding to checkout...");
     }
-  }
+  };
 
   return (
     <Sheet>
@@ -49,7 +57,7 @@ export default function CartDrawer() {
           <span className="sr-only">View cart</span>
         </Button>
       </SheetTrigger>
-      <SheetContent className="flex flex-col">
+      <SheetContent className="flex flex-col ">
         <SheetHeader>
           <SheetTitle>Your Cart ({getTotalItems()})</SheetTitle>
         </SheetHeader>
@@ -115,22 +123,22 @@ export default function CartDrawer() {
             </div>
           </ScrollArea>
         )}
-        <Separator className="mt-auto" />
+        <Separator className="mt-auto " />
         <SheetFooter className="mt-4">
-          <div className="flex justify-between items-center w-full mb-4">
-            <span className="text-lg font-semibold">Total:</span>
+          <div className="flex  items-center w-full mb-4 gap-1">
+            <span className="text-lg font-semibold">Total: {`  `} </span>
             <span className="text-lg font-bold">${getTotalPrice().toFixed(2)}</span>
           </div>
           <Button onClick={handleProceedToCheckout} className="w-full">
             Proceed to Checkout
           </Button>
-          {cartItems.length > 0 && (
+          {/* {cartItems.length > 0 && (
             <Button variant="ghost" onClick={clearCart} className="w-full mt-2">
               Clear Cart
             </Button>
-          )}
+          )} */}
         </SheetFooter>
       </SheetContent>
     </Sheet>
-  )
+  );
 }
