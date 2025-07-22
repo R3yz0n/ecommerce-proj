@@ -1,0 +1,22 @@
+import { NextResponse } from "next/server";
+import dbConnect from "@/utils/dbConnect";
+import User from "@/models/User";
+import jwt from "jsonwebtoken";
+
+export async function POST(request: Request) {
+  await dbConnect();
+  const { email, password } = await request.json();
+
+  const user = await User.findOne({ email });
+  if (!user || user.password !== password) {
+    return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
+  }
+
+  const token = jwt.sign(
+    { id: user._id, email: user.email },
+    process.env.JWT_SECRET!,
+    { expiresIn: "1d" }
+  );
+
+  return NextResponse.json({ token, user: { id: user._id, email: user.email } });
+}
