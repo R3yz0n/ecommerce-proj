@@ -3,26 +3,15 @@ import dbConnect from "@/utils/dbConnect";
 import Product from "@/models/Product";
 
 export async function GET(request: Request) {
-  const dummyProducts = [
-    {
-      id: 1,
-      name: "Product 1",
-      description: "Description for product 1",
-      price: 100,
-      image: "https://via.placeholder.com/150",
-      category: "Category 1",
-    },
-    {
-      id: 2,
-      name: "Product 2",
-      description: "Description for product 2",
-      price: 200,
-      image: "https://via.placeholder.com/150",
-      category: "Category 2",
-    },
-  ];
+  try {
+    await dbConnect();
+    NextResponse.json({ message: "Database connected" });
+    const products = await Product.find({});
 
-  return NextResponse.json(dummyProducts);
+    return NextResponse.json(products);
+  } catch (error) {
+    return NextResponse.json({ error: "Failed to fetch products" }, { status: 500 });
+  }
 }
 
 /**
