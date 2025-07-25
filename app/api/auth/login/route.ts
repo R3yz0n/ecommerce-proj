@@ -12,11 +12,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
   }
 
-  const token = jwt.sign(
-    { id: user._id, email: user.email },
-    process.env.JWT_SECRET!,
-    { expiresIn: "1d" }
-  );
+  const token = jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET!, {
+    expiresIn: "1d",
+  });
 
-  return NextResponse.json({ token, user: { id: user._id, email: user.email } });
+  return NextResponse.json({ success: true, token, user: { id: user._id, email: user.email } });
 }

@@ -1,5 +1,6 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import axios from "axios";
 
@@ -16,10 +17,15 @@ export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
+    if (typeof window !== "undefined" && !localStorage.getItem("token")) {
+      router.push("/login");
+      return;
+    }
     fetchProducts();
-  }, []);
+  }, [router]);
 
   const fetchProducts = async () => {
     try {
