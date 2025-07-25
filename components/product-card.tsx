@@ -47,12 +47,10 @@ export default function ProductCard({ product }: { product: Product }) {
           {Array.from({ length: 5 }).map((_, i) => (
             <StarIcon
               key={i}
-              className={`w-4 h-4 ${
-                i < product.rating.stars ? "text-yellow-400 fill-yellow-400" : "text-gray-300"
-              }`}
+              className={`w-4 h-4 ${i < 5 ? "text-yellow-400 fill-yellow-400" : "text-gray-300"}`}
             />
           ))}
-          <span className="text-xs text-gray-500 ml-2">({product.rating.count})</span>
+          <span className="text-xs text-gray-500 ml-2">({5})</span>
         </div>
         <div className="text-xl font-bold text-green-600 dark:text-green-400">
           ${product.price.toFixed(2)}
