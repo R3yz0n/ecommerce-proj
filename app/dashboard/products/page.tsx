@@ -30,7 +30,12 @@ export default function ProductsPage() {
   const fetchProducts = async () => {
     try {
       setError(null);
-      const response = await axios.get("/api/products");
+      const token = localStorage.getItem("token");
+      const response = await axios.get(`/api/my-products`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       const data = response.data;
 
       // Check if data is an array, if not set empty array
