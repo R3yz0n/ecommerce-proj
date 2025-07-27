@@ -11,7 +11,7 @@ export const GET = withAuth(async (request) => {
     // Get products created by the authenticated user
     console.log("get user product");
 
-    const products = await Product.find({});
+    const products = await Product.find({ userId: userId });
     return NextResponse.json(products);
   } catch (error) {
     return NextResponse.json({ error: "Failed to fetch products" }, { status: 500 });

@@ -30,13 +30,22 @@ export default function AddProductPage() {
     setMessage("");
     setLoading(true);
     try {
-      const res = await axios.post("/api/products", {
-        name: form.name,
-        description: form.description,
-        price: Number(form.price),
-        image: form.image,
-        category: form.category,
-      });
+      const token = localStorage.getItem("token");
+      const res = await axios.post(
+        "/api/products",
+        {
+          name: form.name,
+          description: form.description,
+          price: Number(form.price),
+          image: form.image,
+          category: form.category,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       if (res.data.success) {
         setMessage("✅ Product added successfully!");
         setForm({ name: "", description: "", price: "", image: "", category: "" });

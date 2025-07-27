@@ -1,13 +1,12 @@
 import { NextResponse } from "next/server";
 import dbConnect from "@/utils/dbConnect";
 import Product from "@/models/Product";
+import { withAuth } from "@/lib/middleware/auth";
 
 export async function GET(request: Request) {
   try {
     await dbConnect();
-    NextResponse.json({ message: "Database connected" });
     const products = await Product.find({});
-
     return NextResponse.json(products);
   } catch (error) {
     return NextResponse.json({ error: "Failed to fetch products" }, { status: 500 });
@@ -32,12 +31,16 @@ export async function GET(request: Request) {
  *   201: { success: true, data: product }
  *   400: { success: false, error: "Failed to create product" }
  */
-export async function POST(request: Request) {
+export const POST = withAuth(async (request) => {
   await dbConnect();
   const body = await request.json();
+  const userId = request.user.id; // Get userId from middleware
 
   try {
-    const product = await Product.create(body);
+    // Add userId to the product data
+    const productData = { ...body, userId };
+    console.log(productData);
+    const product = await Product.create(productData);
     return NextResponse.json({ success: true, data: product }, { status: 201 });
   } catch (error) {
     return NextResponse.json(
@@ -45,4 +48,4 @@ export async function POST(request: Request) {
       { status: 400 }
     );
   }
-}
+});
