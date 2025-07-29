@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import axios from "axios";
 import { toast } from "sonner";
+import { ShoppingBag } from "lucide-react";
 
 interface Product {
   _id: string;
@@ -174,7 +175,10 @@ export default function ProductsPage() {
               <Link href="/dashboard" className="text-blue-600 hover:text-blue-800 mr-4">
                 ← Back to Dashboard
               </Link>
-              <h1 className="text-xl font-semibold text-gray-900">Products</h1>
+              <h1 className="text-xl font-semibold text-gray-900 flex items-center">
+                <ShoppingBag className="mr-2 h-6 w-6" />
+                Products Management
+              </h1>
             </div>
             <div className="flex items-center">
               <Link

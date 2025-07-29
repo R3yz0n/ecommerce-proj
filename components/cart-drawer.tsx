@@ -56,7 +56,7 @@ export default function CartDrawer() {
 
     try {
       const res = await axios.post(
-        "/api/orders/user-orders",
+        "/api/orders/user",
         {
           cartItems,
           totalPrice: getTotalPrice(),

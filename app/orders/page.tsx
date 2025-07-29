@@ -50,7 +50,7 @@ export default function MyOrdersPage() {
 
     const fetchOrders = async () => {
       try {
-        const response = await axios.get("/api/orders/user-orders", {
+        const response = await axios.get("/api/orders/user", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -83,7 +83,7 @@ export default function MyOrdersPage() {
 
     try {
       const response = await axios.patch(
-        `/api/orders/user-orders/cancel/${orderId}`,
+        `/api/orders/${orderId}/cancel`,
         {},
         {
           headers: {
