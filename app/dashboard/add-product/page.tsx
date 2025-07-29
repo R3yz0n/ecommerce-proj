@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
+import { toast } from "sonner";
 
 export default function AddProductPage() {
   const [form, setForm] = useState({
@@ -11,7 +12,6 @@ export default function AddProductPage() {
     image: "",
     category: "",
   });
-  const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
@@ -27,7 +27,6 @@ export default function AddProductPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setMessage("");
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
@@ -47,13 +46,13 @@ export default function AddProductPage() {
         }
       );
       if (res.data.success) {
-        setMessage("✅ Product added successfully!");
+        toast.success("Product added successfully!");
         router.push("/dashboard/products");
       } else {
-        setMessage(res.data.error || "Failed to add product.");
+        toast.error(res.data.error || "Failed to add product.");
       }
     } catch (err: any) {
-      setMessage(err.response?.data?.error || "Failed to add product.");
+      toast.error(err.response?.data?.error || "Failed to add product.");
     }
     setLoading(false);
   };
@@ -112,15 +111,6 @@ export default function AddProductPage() {
             {loading ? "Adding..." : "Add Product"}
           </button>
         </form>
-        {message && (
-          <p
-            className={`mt-4 text-center ${
-              message.includes("successfully") ? "text-green-600" : "text-red-600"
-            }`}
-          >
-            {message}
-          </p>
-        )}
       </div>
     </main>
   );

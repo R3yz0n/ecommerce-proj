@@ -34,13 +34,21 @@ import { toast } from "sonner";
 export default function CartDrawer() {
   const { cartItems, getTotalItems, getTotalPrice, updateQuantity, removeFromCart, clearCart } =
     useCart();
-  let token = localStorage.getItem("token");
   const router = useRouter();
   const [phoneNo, setPhoneNo] = useState("");
   const [address, setAddress] = useState("");
   const [isCheckoutOpen, setCheckoutOpen] = useState(false);
 
+  const getToken = () => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("token");
+    }
+    return null;
+  };
+
   const handlePlaceOrder = async () => {
+    const token = getToken();
+
     if (!phoneNo || !address || !token) {
       toast.error("Please provide your phone number and address.");
       return;
@@ -61,7 +69,6 @@ export default function CartDrawer() {
           },
         }
       );
-      debugger;
       if (res.data.success) {
         toast.success("Order Placed Successfully!");
         clearCart();
@@ -82,6 +89,8 @@ export default function CartDrawer() {
   };
 
   const handleProceedToCheckout = () => {
+    const token = getToken();
+
     if (!token) {
       toast.error("Please login or sign up to proceed to checkout.");
       router.push("/login");
@@ -93,15 +102,16 @@ export default function CartDrawer() {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative">
-          <ShoppingCartIcon className="h-6 w-6" />
+        <div className="relative hover:bg-gray-100 p-2 rounded-sm cursor-pointer flex gap-2 items-center font-medium text-sm  ">
+          <ShoppingCartIcon className="h-6 w-6 " />
+          My Cart
           {getTotalItems() > 0 && (
             <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
               {getTotalItems()}
             </span>
           )}
           <span className="sr-only">View cart</span>
-        </Button>
+        </div>
       </SheetTrigger>
       <SheetContent className="flex flex-col ">
         <SheetHeader>
@@ -133,7 +143,7 @@ export default function CartDrawer() {
                     height={80}
                     className="rounded-md object-cover"
                   />
-                  <div className="grid flex-grow gap-1">
+                  <div className="grid flex-grow gap-2">
                     <h3 className="font-medium text-sm">{item.name}</h3>
                     <p className="text-muted-foreground text-sm">${item.price.toFixed(2)}</p>
                     <div className="flex items-center gap-2">

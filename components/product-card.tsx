@@ -14,7 +14,7 @@ export default function ProductCard({ product }: { product: Product }) {
     <Card className="flex flex-col h-full overflow-hidden rounded-lg shadow-md hover:shadow-xl transition-all duration-300 group">
       <CardHeader className="p-0 relative">
         <Image
-          src={product.image || "/placeholder.svg"}
+          src={(product.image || "/placeholder.svg").trimEnd()}
           alt={product.name}
           width={400}
           height={300}

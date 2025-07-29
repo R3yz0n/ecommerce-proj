@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import axios from "axios";
+import { toast } from "sonner";
 
 interface Product {
   _id: string;
@@ -17,6 +18,16 @@ export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [editForm, setEditForm] = useState({
+    name: "",
+    description: "",
+    price: "",
+    category: "",
+    image: "",
+  });
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editLoading, setEditLoading] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -55,10 +66,20 @@ export default function ProductsPage() {
   };
 
   const handleDelete = async (productId: string) => {
-    if (!confirm("Are you sure you want to delete this product?")) {
-      return;
-    }
+    toast("Are you sure you want to delete this product?", {
+      description: "This action cannot be undone.",
+      action: {
+        label: <p className="bg-red-500 text-white px-2 text- py-1 rounded-sm">Delete</p>,
+        onClick: () => confirmDelete(productId),
+      },
+      cancel: {
+        label: <p className="bg-gray-500 text-white px-2 text py-1 rounded-sm">Cancel</p>,
+        onClick: () => {},
+      },
+    });
+  };
 
+  const confirmDelete = async (productId: string) => {
     const token = localStorage.getItem("token");
     try {
       await axios.delete(`/api/products/${productId}`, {
@@ -68,10 +89,79 @@ export default function ProductsPage() {
       });
       // Refresh the product list by filtering out the deleted product
       setProducts(products.filter((p) => p._id !== productId));
+      toast.success("Product deleted successfully!");
     } catch (err: any) {
       console.error("Failed to delete product", err);
-      setError(err.response?.data?.error || "Failed to delete product.");
+      const errorMessage = err.response?.data?.error || "Failed to delete product.";
+      // setError(errorMessage);
+      toast.error(errorMessage);
     }
+  };
+
+  const handleEdit = (product: Product) => {
+    setEditingProduct(product);
+    setEditForm({
+      name: product.name,
+      description: product.description,
+      price: product.price.toString(),
+      category: product.category,
+      image: product.image,
+    });
+    setIsEditModalOpen(true);
+  };
+
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingProduct) return;
+
+    setEditLoading(true);
+    const token = localStorage.getItem("token");
+
+    try {
+      const response = await axios.put(
+        `/api/products/${editingProduct._id}`,
+        {
+          name: editForm.name,
+          description: editForm.description,
+          price: parseFloat(editForm.price),
+          category: editForm.category,
+          image: editForm.image,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      // Update the product in the list
+      setProducts(products.map((p) => (p._id === editingProduct._id ? response.data.product : p)));
+
+      setIsEditModalOpen(false);
+      setEditingProduct(null);
+      setError(null);
+      toast.success("Product updated successfully!");
+    } catch (err: any) {
+      console.error("Failed to update product", err);
+      const errorMessage = err.response?.data?.error || "Failed to update product.";
+      setError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
+  const handleEditCancel = () => {
+    setIsEditModalOpen(false);
+    setEditingProduct(null);
+    setEditForm({
+      name: "",
+      description: "",
+      price: "",
+      category: "",
+      image: "",
+    });
   };
 
   return (
@@ -145,10 +235,16 @@ export default function ProductsPage() {
                         {product.category}
                       </span>
                     </div>
-                    <div className="mt-4">
+                    <div className="mt-4 flex space-x-2">
+                      <button
+                        onClick={() => handleEdit(product)}
+                        className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                      >
+                        Edit
+                      </button>
                       <button
                         onClick={() => handleDelete(product._id)}
-                        className="w-full bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                        className="flex-1 bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
                       >
                         Delete
                       </button>
@@ -172,6 +268,119 @@ export default function ProductsPage() {
           )}
         </div>
       </div>
+
+      {/* Edit Product Modal */}
+      {isEditModalOpen && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-2/3 lg:w-1/2 shadow-lg rounded-md bg-white">
+            <div className="mt-3">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Edit Product</h3>
+              <form onSubmit={handleEditSubmit} className="space-y-4">
+                <div>
+                  <label htmlFor="edit-name" className="block text-sm font-medium text-gray-700">
+                    Product Name
+                  </label>
+                  <input
+                    type="text"
+                    id="edit-name"
+                    value={editForm.name}
+                    onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="edit-description"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Description
+                  </label>
+                  <textarea
+                    id="edit-description"
+                    value={editForm.description}
+                    onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                    rows={3}
+                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="edit-price" className="block text-sm font-medium text-gray-700">
+                    Price ($)
+                  </label>
+                  <input
+                    type="number"
+                    id="edit-price"
+                    value={editForm.price}
+                    onChange={(e) => setEditForm({ ...editForm, price: e.target.value })}
+                    step="0.01"
+                    min="0"
+                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="edit-category"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Category
+                  </label>
+                  <input
+                    type="text"
+                    id="edit-category"
+                    value={editForm.category}
+                    onChange={(e) => setEditForm({ ...editForm, category: e.target.value })}
+                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="edit-image" className="block text-sm font-medium text-gray-700">
+                    Image URL
+                  </label>
+                  <input
+                    type="url"
+                    id="edit-image"
+                    value={editForm.image}
+                    onChange={(e) => setEditForm({ ...editForm, image: e.target.value })}
+                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="https://example.com/image.jpg"
+                  />
+                </div>
+
+                {error && (
+                  <div className="bg-red-50 border border-red-200 rounded-md p-3">
+                    <p className="text-sm text-red-600">{error}</p>
+                  </div>
+                )}
+
+                <div className="flex space-x-3 pt-4">
+                  <button
+                    type="submit"
+                    disabled={editLoading}
+                    className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {editLoading ? "Updating..." : "Update Product"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleEditCancel}
+                    className="flex-1 bg-gray-300 text-gray-700 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

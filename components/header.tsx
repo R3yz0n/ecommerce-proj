@@ -1,17 +1,5 @@
-import Link from "next/link";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/context/auth-context";
-import CartDrawer from "./cart-drawer";
-import { Input } from "@/components/ui/input";
-import {
-  SearchIcon,
-  UserIcon,
-  LayoutDashboard,
-  Package,
-  LogOut,
-  LogIn,
-  ChevronDown,
-} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,8 +8,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Input } from "@/components/ui/input";
+import { useAuth } from "@/context/auth-context";
+import { ChevronDown, LayoutDashboard, LogIn, LogOut, Package, SearchIcon } from "lucide-react";
+import Link from "next/link";
 import type React from "react";
+import CartDrawer from "./cart-drawer";
 
 export default function Header({
   searchTerm,
@@ -34,10 +26,10 @@ export default function Header({
 
   return (
     <header className="sticky top-0 z-40 w-full bg-white border-b shadow-sm">
-      <div className="container flex h-16 items-center justify-between px-4 md:px-6">
+      <div className="container flex h-16 items-center justify-between px-4 md:px-6 m-auto">
         <Link href="/" className="flex items-center gap-2" prefetch={false}>
-          <span className="font-extrabold text-2xl text-gray-900">E</span>
-          <span className="text-xl font-semibold text-gray-900">EliteShop</span>
+          <span className="font-extrabold text-2xl text-gray-900">Ecom-shop</span>
+          <span className="text-xl font-semibold text-gray-900"></span>
         </Link>
         <div className="relative flex-1 max-w-md mx-4">
           <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500" />
@@ -52,8 +44,8 @@ export default function Header({
         <nav className="flex items-center gap-4">
           {!user ? (
             <Link href="/login" passHref>
-              <Button variant="ghost" className="flex items-center gap-2">
-                <LogIn className="h-5 w-5" />
+              <Button variant="ghost" className="flex font-semibold  items-center gap-2">
+                <LogIn className="h-[24px!important] w-[24px!important] " />
                 Login
               </Button>
             </Link>
