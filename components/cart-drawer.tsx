@@ -18,15 +18,80 @@ import Link from "next/link";
 import { useAuth } from "@/context/auth-context";
 import { useRouter } from "next/navigation";
 import { toast } from "@/components/ui/use-toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useState } from "react";
+import axios from "axios";
 
 export default function CartDrawer() {
   const { cartItems, getTotalItems, getTotalPrice, updateQuantity, removeFromCart, clearCart } =
     useCart();
-  const { isLoggedIn } = useAuth();
+  let token = localStorage.getItem("token");
   const router = useRouter();
+  const [phoneNo, setPhoneNo] = useState("");
+  const [address, setAddress] = useState("");
+  const [isCheckoutOpen, setCheckoutOpen] = useState(false);
+
+  const handlePlaceOrder = async () => {
+    if (!phoneNo || !address || !token) {
+      toast({
+        title: "Missing Information",
+        description: "Please provide your phone number and address.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const res = await axios.post(
+        "/api/my-orders",
+        {
+          cartItems,
+          totalPrice: getTotalPrice(),
+          phoneNo,
+          address,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (res.data.success) {
+        toast({
+          title: "Order Placed!",
+          description: "Your order has been placed successfully.",
+        });
+        clearCart();
+        setCheckoutOpen(false);
+      } else {
+        toast({
+          title: "Order Failed",
+          description: res.data.error || "There was an issue placing your order.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Order Error",
+        description: "Could not place your order. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const handleProceedToCheckout = () => {
-    if (!isLoggedIn) {
+    if (!token) {
       toast({
         title: "Authentication Required",
         description: "Please login or sign up to proceed to checkout.",
@@ -34,13 +99,7 @@ export default function CartDrawer() {
       });
       router.push("/login");
     } else {
-      // In a real app, navigate to checkout page
-      toast({
-        title: "Proceeding to Checkout",
-        description: "You are logged in and ready to checkout!",
-        variant: "default",
-      });
-      console.log("User logged in, proceeding to checkout...");
+      setCheckoutOpen(true);
     }
   };
 
@@ -76,7 +135,7 @@ export default function CartDrawer() {
           <ScrollArea className="flex-grow pr-4">
             <div className="space-y-4">
               {cartItems.map((item) => (
-                <div key={item.id} className="flex items-center gap-4">
+                <div key={item._id} className="flex items-center gap-4">
                   <Image
                     src={item.image || "/placeholder.svg"}
                     alt={item.name}
@@ -92,7 +151,7 @@ export default function CartDrawer() {
                         variant="outline"
                         size="icon"
                         className="h-7 w-7 bg-transparent"
-                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                        onClick={() => updateQuantity(item._id, item.quantity - 1)}
                       >
                         <MinusIcon className="h-4 w-4" />
                         <span className="sr-only">Decrease quantity</span>
@@ -102,7 +161,7 @@ export default function CartDrawer() {
                         variant="outline"
                         size="icon"
                         className="h-7 w-7 bg-transparent"
-                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                        onClick={() => updateQuantity(item._id, item.quantity + 1)}
                       >
                         <PlusIcon className="h-4 w-4" />
                         <span className="sr-only">Increase quantity</span>
@@ -111,7 +170,7 @@ export default function CartDrawer() {
                         variant="ghost"
                         size="icon"
                         className="ml-auto h-7 w-7 text-destructive hover:bg-destructive/10 hover:text-destructive"
-                        onClick={() => removeFromCart(item.id)}
+                        onClick={() => removeFromCart(item._id)}
                       >
                         <TrashIcon className="h-4 w-4" />
                         <span className="sr-only">Remove item</span>
@@ -129,9 +188,46 @@ export default function CartDrawer() {
             <span className="text-lg font-semibold">Total: {`  `} </span>
             <span className="text-lg font-bold">${getTotalPrice().toFixed(2)}</span>
           </div>
-          <Button onClick={handleProceedToCheckout} className="w-full">
+          <Button
+            onClick={handleProceedToCheckout}
+            className="w-full"
+            disabled={cartItems.length === 0}
+          >
             Proceed to Checkout
           </Button>
+          <Dialog open={isCheckoutOpen} onOpenChange={setCheckoutOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Checkout</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="phoneNo">Phone Number</Label>
+                  <Input
+                    id="phoneNo"
+                    value={phoneNo}
+                    onChange={(e) => setPhoneNo(e.target.value)}
+                    placeholder="Enter your phone number"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="address">Address</Label>
+                  <Input
+                    id="address"
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    placeholder="Enter your shipping address"
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <DialogClose asChild>
+                  <Button variant="outline">Cancel</Button>
+                </DialogClose>
+                <Button onClick={handlePlaceOrder}>Place Order</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
           {/* {cartItems.length > 0 && (
             <Button variant="ghost" onClick={clearCart} className="w-full mt-2">
               Clear Cart
