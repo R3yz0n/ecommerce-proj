@@ -1,21 +1,19 @@
-"use client"
-
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { useAuth } from "@/context/auth-context"
-import CartDrawer from "./cart-drawer"
-import { Input } from "@/components/ui/input"
-import { SearchIcon, UserIcon } from "lucide-react"
-import type React from "react"
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/context/auth-context";
+import CartDrawer from "./cart-drawer";
+import { Input } from "@/components/ui/input";
+import { SearchIcon, UserIcon, LayoutDashboard, Package, LogOut, LogIn } from "lucide-react";
+import type React from "react";
 
 export default function Header({
   searchTerm,
   onSearchChange,
 }: {
-  searchTerm: string
-  onSearchChange: (term: string) => void
+  searchTerm: string;
+  onSearchChange: (term: string) => void;
 }) {
-  const { isLoggedIn, logout } = useAuth()
+  const { user, logout } = useAuth();
 
   return (
     <header className="sticky top-0 z-40 w-full bg-white border-b shadow-sm">
@@ -35,22 +33,49 @@ export default function Header({
           />
         </div>
         <nav className="flex items-center gap-4">
-          {isLoggedIn ? (
-            <Button onClick={logout} variant="ghost" className="flex items-center gap-2">
-              <UserIcon className="h-5 w-5" />
-              Logout
-            </Button>
-          ) : (
+          {!user ? (
             <Link href="/login" passHref>
               <Button variant="ghost" className="flex items-center gap-2">
-                <UserIcon className="h-5 w-5" />
+                <LogIn className="h-5 w-5" />
                 Login
               </Button>
             </Link>
+          ) : user.role === "admin" ? (
+            <>
+              <Link href="/dashboard" passHref>
+                <Button variant="ghost" className="flex items-center gap-2">
+                  <LayoutDashboard className="h-5 w-5" />
+                  Dashboard
+                </Button>
+              </Link>
+              <Button onClick={logout} variant="ghost" className="flex items-center gap-2">
+                <LogOut className="h-5 w-5" />
+                Logout
+              </Button>
+            </>
+          ) : (
+            <>
+              <Link href="/profile" passHref>
+                <Button variant="ghost" className="flex items-center gap-2">
+                  <UserIcon className="h-5 w-5" />
+                  Profile
+                </Button>
+              </Link>
+              <Link href="/orders" passHref>
+                <Button variant="ghost" className="flex items-center gap-2">
+                  <Package className="h-5 w-5" />
+                  Orders
+                </Button>
+              </Link>
+              <Button onClick={logout} variant="ghost" className="flex items-center gap-2">
+                <LogOut className="h-5 w-5" />
+                Logout
+              </Button>
+            </>
           )}
           <CartDrawer />
         </nav>
       </div>
     </header>
-  )
+  );
 }

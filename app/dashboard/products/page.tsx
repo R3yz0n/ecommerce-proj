@@ -54,6 +54,26 @@ export default function ProductsPage() {
     }
   };
 
+  const handleDelete = async (productId: string) => {
+    if (!confirm("Are you sure you want to delete this product?")) {
+      return;
+    }
+
+    const token = localStorage.getItem("token");
+    try {
+      await axios.delete(`/api/products/${productId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      // Refresh the product list by filtering out the deleted product
+      setProducts(products.filter((p) => p._id !== productId));
+    } catch (err: any) {
+      console.error("Failed to delete product", err);
+      setError(err.response?.data?.error || "Failed to delete product.");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Navigation Header */}
@@ -124,6 +144,14 @@ export default function ProductsPage() {
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                         {product.category}
                       </span>
+                    </div>
+                    <div className="mt-4">
+                      <button
+                        onClick={() => handleDelete(product._id)}
+                        className="w-full bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                      >
+                        Delete
+                      </button>
                     </div>
                   </div>
                 </div>

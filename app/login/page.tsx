@@ -31,8 +31,9 @@ export default function LoginPage() {
     try {
       const res = await axios.post("/api/auth/login", form);
       if (res.data.success && res.data.token) {
-        localStorage.setItem("token", res.data.token);
-        login(); // Simulate login context
+        // The login function from context now handles storing user data
+        debugger;
+        login(res.data.user, res.data.token);
         router.push("/dashboard");
       } else {
         setMessage(res.data.error || "Login failed.");
@@ -54,7 +55,15 @@ export default function LoginPage() {
           <form onSubmit={handleLogin} className="grid gap-4">
             <div className="grid gap-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" name="email" type="email" placeholder="m@example.com" required value={form.email} onChange={handleChange} />
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                placeholder="m@example.com"
+                required
+                value={form.email}
+                onChange={handleChange}
+              />
             </div>
             <div className="grid gap-2">
               <div className="flex items-center">
@@ -63,7 +72,14 @@ export default function LoginPage() {
                   Forgot your password?
                 </Link>
               </div>
-              <Input id="password" name="password" type="password" required value={form.password} onChange={handleChange} />
+              <Input
+                id="password"
+                name="password"
+                type="password"
+                required
+                value={form.password}
+                onChange={handleChange}
+              />
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Logging in..." : "Login"}

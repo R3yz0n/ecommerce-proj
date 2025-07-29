@@ -16,20 +16,44 @@ export async function GET(request: Request) {
 /**
  * POST /api/products
  *
- * Create a new product in the database.
+ * Creates a new product.
  *
- * Request body (JSON):
+ * Authentication:
+ *   Requires a valid Bearer token in the Authorization header.
+ *
+ * Request Body:
  * {
- *   name: string,
- *   description: string,
- *   price: number,
- *   image: string,
- *   category: string
+ *   "name": "Sample Product",
+ *   "description": "This is a sample product.",
+ *   "price": 99.99,
+ *   "image": "image_url",
+ *   "category": "Electronics"
  * }
  *
- * Response:
- *   201: { success: true, data: product }
- *   400: { success: false, error: "Failed to create product" }
+ * Response (201 - Created):
+ * {
+ *   "success": true,
+ *   "data": {
+ *     "_id": "product_id",
+ *     "name": "Sample Product",
+ *     "description": "This is a sample product.",
+ *     "price": 99.99,
+ *     "image": "image_url",
+ *     "category": "Electronics",
+ *     "userId": "authenticated_user_id"
+ *   }
+ * }
+ *
+ * Response (400 - Bad Request):
+ * {
+ *   "success": false,
+ *   "error": "Failed to create product"
+ * }
+ *
+ * Response (401 - Unauthorized):
+ * {
+ *   "error": "Access denied. No token provided."
+ * }
  */
 export const POST = withAuth(async (request) => {
   await dbConnect();

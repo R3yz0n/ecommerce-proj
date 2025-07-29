@@ -170,7 +170,7 @@ export default function DashboardPage() {
                   <div className="ml-5 w-0 flex-1">
                     <dl>
                       <dt className="text-sm font-medium text-gray-500 truncate">Add Product</dt>
-                      <dd className="text-lg font-medium text-gray-900">Create New Product</dd>
+                      <dd className="text-lg font-medium text-gray-900">Add New Product</dd>
                     </dl>
                   </div>
                 </div>
