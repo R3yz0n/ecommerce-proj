@@ -120,12 +120,11 @@ export function withAuth(
     }
 
     // Create a new request object with the user added
-    const requestWithUser = new Request(request);
-    // @ts-ignore - Add user to request object
-    requestWithUser.user = authResult.user;
+    // @ts-ignore
+    request.user = authResult.user;
 
     // Call the handler with the modified request
-    return handler(requestWithUser, context);
+    return handler(request, context);
   };
 }
 
