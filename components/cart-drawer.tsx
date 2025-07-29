@@ -1,5 +1,8 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
 import {
   Sheet,
   SheetContent,
@@ -8,29 +11,25 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
-import { MinusIcon, PlusIcon, ShoppingCartIcon, TrashIcon } from "lucide-react";
 import { useCart } from "@/context/cart-context";
+import { MinusIcon, PlusIcon, ShoppingCartIcon, TrashIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useAuth } from "@/context/auth-context";
 import { useRouter } from "next/navigation";
-import { toast } from "@/components/ui/use-toast";
+
 import {
   Dialog,
+  DialogClose,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
-  DialogFooter,
-  DialogClose,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
 import axios from "axios";
+import { useState } from "react";
+import { toast } from "sonner";
 
 export default function CartDrawer() {
   const { cartItems, getTotalItems, getTotalPrice, updateQuantity, removeFromCart, clearCart } =
@@ -43,17 +42,13 @@ export default function CartDrawer() {
 
   const handlePlaceOrder = async () => {
     if (!phoneNo || !address || !token) {
-      toast({
-        title: "Missing Information",
-        description: "Please provide your phone number and address.",
-        variant: "destructive",
-      });
+      toast.error("Please provide your phone number and address.");
       return;
     }
 
     try {
       const res = await axios.post(
-        "/api/my-orders",
+        "/api/orders/user-orders",
         {
           cartItems,
           totalPrice: getTotalPrice(),
@@ -66,37 +61,29 @@ export default function CartDrawer() {
           },
         }
       );
-
+      debugger;
       if (res.data.success) {
-        toast({
-          title: "Order Placed!",
-          description: "Your order has been placed successfully.",
-        });
+        toast.success("Order Placed Successfully!");
         clearCart();
         setCheckoutOpen(false);
+
+        // setPhoneNo("");
+        // setAddress("");
       } else {
-        toast({
-          title: "Order Failed",
-          description: res.data.error || "There was an issue placing your order.",
-          variant: "destructive",
-        });
+        toast.error(res.data.error || "There was an issue placing your order. Please try again.");
       }
-    } catch (error) {
-      toast({
-        title: "Order Error",
-        description: "Could not place your order. Please try again.",
-        variant: "destructive",
-      });
+    } catch (error: any) {
+      console.error("Order placement error:", error);
+      toast.error(
+        error.response?.data?.error ||
+          "Could not place your order. Please check your connection and try again."
+      );
     }
   };
 
   const handleProceedToCheckout = () => {
     if (!token) {
-      toast({
-        title: "Authentication Required",
-        description: "Please login or sign up to proceed to checkout.",
-        variant: "destructive",
-      });
+      toast.error("Please login or sign up to proceed to checkout.");
       router.push("/login");
     } else {
       setCheckoutOpen(true);
@@ -122,7 +109,7 @@ export default function CartDrawer() {
         </SheetHeader>
         <Separator />
         {cartItems.length === 0 ? (
-          <div className="flex flex-col items-center justify-center flex-grow text-center text-muted-foreground">
+          <div className="flex flex-col items-center justify-center flex-grow text-center text-muted-foreground ">
             <ShoppingCartIcon className="w-12 h-12 mb-4" />
             <p>Your cart is empty.</p>
             <Link href="/" passHref>
@@ -132,10 +119,13 @@ export default function CartDrawer() {
             </Link>
           </div>
         ) : (
-          <ScrollArea className="flex-grow pr-4">
+          <ScrollArea className="flex-grow w-[102%]">
             <div className="space-y-4">
               {cartItems.map((item) => (
-                <div key={item._id} className="flex items-center gap-4">
+                <div
+                  key={item._id}
+                  className="flex items-center gap-4 border bg-gray-50 border-b p-2 shadow-sm rounded-md "
+                >
                   <Image
                     src={item.image || "/placeholder.svg"}
                     alt={item.name}
@@ -196,7 +186,7 @@ export default function CartDrawer() {
             Proceed to Checkout
           </Button>
           <Dialog open={isCheckoutOpen} onOpenChange={setCheckoutOpen}>
-            <DialogContent>
+            <DialogContent className="bg-white dark:bg-gray-900">
               <DialogHeader>
                 <DialogTitle>Checkout</DialogTitle>
               </DialogHeader>

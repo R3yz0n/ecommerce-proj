@@ -3,7 +3,24 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/auth-context";
 import CartDrawer from "./cart-drawer";
 import { Input } from "@/components/ui/input";
-import { SearchIcon, UserIcon, LayoutDashboard, Package, LogOut, LogIn } from "lucide-react";
+import {
+  SearchIcon,
+  UserIcon,
+  LayoutDashboard,
+  Package,
+  LogOut,
+  LogIn,
+  ChevronDown,
+} from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import type React from "react";
 
 export default function Header({
@@ -55,22 +72,46 @@ export default function Header({
             </>
           ) : (
             <>
-              <Link href="/profile" passHref>
-                <Button variant="ghost" className="flex items-center gap-2">
-                  <UserIcon className="h-5 w-5" />
-                  Profile
-                </Button>
-              </Link>
-              <Link href="/orders" passHref>
-                <Button variant="ghost" className="flex items-center gap-2">
-                  <Package className="h-5 w-5" />
-                  Orders
-                </Button>
-              </Link>
-              <Button onClick={logout} variant="ghost" className="flex items-center gap-2">
-                <LogOut className="h-5 w-5" />
-                Logout
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="flex items-center gap-2 h-auto p-2">
+                    <Avatar className="h-8 w-8">
+                      <AvatarFallback className="bg-primary text-primary-foreground font-semibold">
+                        {user.email?.charAt(0).toUpperCase() || "U"}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="hidden md:inline font-medium">
+                      {user.email?.split("@")[0] || "User"}
+                    </span>
+                    <ChevronDown className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none">
+                        {user.email?.split("@")[0] || "User"}
+                      </p>
+                      <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link href="/orders" className="flex items-center gap-2 cursor-pointer">
+                      <Package className="h-4 w-4" />
+                      My Orders
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={logout}
+                    className="flex items-center gap-2 cursor-pointer text-red-600"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </>
           )}
           <CartDrawer />

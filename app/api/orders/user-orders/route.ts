@@ -4,7 +4,7 @@ import Order from "@/models/Order";
 import { withAuth } from "@/lib/middleware/auth";
 
 /**
- * POST /api/my-orders
+ * POST /api/orders/urser-orders
  *
  * Creates a new order.
  *
@@ -74,7 +74,7 @@ export const POST = withAuth(async (request) => {
 });
 
 /**
- * GET /api/my-orders
+ * GET /api/orders/user-orders
  *
  * Retrieves orders placed by the authenticated user.
  *

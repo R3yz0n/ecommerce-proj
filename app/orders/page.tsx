@@ -6,8 +6,10 @@ import { useAuth } from "@/context/auth-context";
 import axios from "axios";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { ShoppingBag, Package, Calendar, MapPin, Phone } from "lucide-react";
+import { ShoppingBag, Package, Calendar, MapPin, Phone, X } from "lucide-react";
+import { toast } from "sonner";
 
 interface OrderProduct {
   product: {
@@ -34,6 +36,7 @@ export default function MyOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [cancellingOrder, setCancellingOrder] = useState<string | null>(null);
   const { user } = useAuth();
   const router = useRouter();
 
@@ -47,7 +50,7 @@ export default function MyOrdersPage() {
 
     const fetchOrders = async () => {
       try {
-        const response = await axios.get("/api/my-orders", {
+        const response = await axios.get("/api/orders/user-orders", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -67,6 +70,47 @@ export default function MyOrdersPage() {
 
     fetchOrders();
   }, [router]);
+
+  const cancelOrder = async (orderId: string) => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      toast.error("Please login to cancel your order.");
+      return;
+    }
+
+    setCancellingOrder(orderId);
+
+    try {
+      const response = await axios.patch(
+        `/api/orders/user-orders/cancel/${orderId}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.data.success) {
+        toast.success("Order cancelled successfully!");
+
+        // Update the order status in the local state
+        setOrders((prevOrders) =>
+          prevOrders.map((order) =>
+            order._id === orderId ? { ...order, status: "cancelled" } : order
+          )
+        );
+      } else {
+        toast.error(response.data.error || "Failed to cancel the order.");
+      }
+    } catch (error: any) {
+      console.error("Order cancellation error:", error);
+      toast.error(error.response?.data?.error || "Could not cancel the order. Please try again.");
+    } finally {
+      setCancellingOrder(null);
+    }
+  };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -113,7 +157,7 @@ export default function MyOrdersPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-4xl mx-auto py-8 px-4">
+      <div className="max-w-screen-xl mx-auto py-8 px-4">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
             <ShoppingBag className="h-8 w-8" />
@@ -133,10 +177,10 @@ export default function MyOrdersPage() {
             </CardContent>
           </Card>
         ) : (
-          <div className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {orders.map((order) => (
               <Card key={order._id} className="overflow-hidden">
-                <CardHeader className="bg-white border-b">
+                <CardHeader className="bg-gray-100 border-b">
                   <div className="flex justify-between items-start">
                     <div>
                       <CardTitle className="text-lg font-semibold">
@@ -153,7 +197,7 @@ export default function MyOrdersPage() {
                         </div>
                       </div>
                       <div className="flex items-center gap-1 mt-1 text-sm text-gray-600">
-                        <MapPin className="h-4 w-4" />
+                        <MapPin className="h-5 w-5 mt-1" />
                         {order.address}
                       </div>
                     </div>
@@ -162,6 +206,18 @@ export default function MyOrdersPage() {
                         {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                       </Badge>
                       <p className="text-lg font-bold mt-1">${order.totalPrice.toFixed(2)}</p>
+                      {order.status.toLowerCase() === "pending" && (
+                        <Button
+                          variant="outline"
+                          size="default"
+                          className="mt-2 text-red-600 border-red-300 hover:bg-red-50"
+                          onClick={() => cancelOrder(order._id)}
+                          disabled={cancellingOrder === order._id}
+                        >
+                          <X className="h-4 w-4 mr-1 text-sm" />
+                          {cancellingOrder === order._id ? "Cancelling..." : "Cancel Order"}
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </CardHeader>
