@@ -23,40 +23,40 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const addToCart = useCallback(
     (product: Product, quantity = 1) => {
       setCartItems((prevItems) => {
-        const existingItem = prevItems.find((item) => item.id === product.id);
+        const existingItem = prevItems.find((item) => item._id === product._id);
         if (existingItem) {
           return prevItems.map((item) =>
-            item.id === product.id ? { ...item, quantity: item.quantity + quantity } : item
+            item._id === product._id ? { ...item, quantity: item.quantity + quantity } : item
           );
         } else {
-          toast({
-            title: "Item added to cart!",
-            description: (
-              <div style={{ display: "flex", alignItems: "center" }}>
-                <img
-                  src={product.image}
-                  alt={product.name}
-                  style={{ width: "50px", height: "50px", marginRight: "10px" }}
-                />
-                <span>{product.name} has been added.</span>
-              </div>
-            ),
-          });
           return [...prevItems, { ...product, quantity }];
         }
+      });
+      toast({
+        title: "Item added to cart!",
+        description: (
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <img
+              src={product.image}
+              alt={product.name}
+              style={{ width: "50px", height: "50px", marginRight: "10px" }}
+            />
+            <span>{product.name} has been added.</span>
+          </div>
+        ),
       });
     },
     [toast]
   );
 
   const removeFromCart = useCallback((productId: string) => {
-    setCartItems((prevItems) => prevItems.filter((item) => item.id !== productId));
+    setCartItems((prevItems) => prevItems.filter((item) => item._id !== productId));
   }, []);
 
   const updateQuantity = useCallback((productId: string, quantity: number) => {
     setCartItems((prevItems) =>
       prevItems
-        .map((item) => (item.id === productId ? { ...item, quantity } : item))
+        .map((item) => (item._id === productId ? { ...item, quantity } : item))
         .filter((item) => item.quantity > 0)
     );
   }, []);
