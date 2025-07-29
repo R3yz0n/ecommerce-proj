@@ -88,6 +88,46 @@ Most endpoints require authentication via JWT token passed in the Authorization 
 Authorization: Bearer <your_jwt_token>
 ```
 
+### Authentication Middleware
+This application uses a custom JWT authentication middleware system located in `/lib/middleware/auth.ts` that provides:
+
+#### JWT Token Verification
+- Validates JWT tokens from `Authorization: Bearer <token>` or `x-auth-token` headers
+- Verifies token signature using `JWT_SECRET` environment variable
+- Checks token expiration automatically
+- Looks up user in database to ensure user still exists
+
+#### Role-Based Authorization
+The middleware provides different levels of access:
+
+- **`withAuth`** - Basic authentication required
+  - Verifies JWT token
+  - Attaches user object to request
+  - Used for user-specific endpoints
+
+- **`withAdminAuth`** - Admin-only access
+  - Extends `withAuth` functionality
+  - Checks if user role is "admin"
+  - Returns 403 Forbidden for non-admin users
+  - Used for administrative endpoints
+
+#### User Object Structure
+After successful authentication, the user object is attached to the request:
+```typescript
+{
+  id: string,        // User's database ID
+  email: string,     // User's email address
+  name: string,      // User's display name
+  role: string       // User's role (user/admin)
+}
+```
+
+#### Error Handling
+The middleware handles various authentication scenarios:
+- **401 Unauthorized**: Missing token, invalid token, expired token, user not found
+- **403 Forbidden**: Valid user but insufficient privileges (admin-only endpoints)
+- **500 Internal Server Error**: Database connection issues
+
 ## Quick Reference - All API Endpoints
 
 ### Authentication
