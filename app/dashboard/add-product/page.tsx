@@ -48,7 +48,7 @@ export default function AddProductPage() {
       );
       if (res.data.success) {
         setMessage("✅ Product added successfully!");
-        setForm({ name: "", description: "", price: "", image: "", category: "" });
+        router.push("/dashboard/products");
       } else {
         setMessage(res.data.error || "Failed to add product.");
       }

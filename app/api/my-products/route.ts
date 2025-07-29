@@ -1,15 +1,15 @@
 import { NextResponse } from "next/server";
 import dbConnect from "@/utils/dbConnect";
 import Product from "@/models/Product";
-import { withAuth } from "@/lib/middleware/auth";
+import { withAdminAuth } from "@/lib/middleware/auth";
 
 /**
  * GET /api/my-products
  *
- * Retrieves products created by the authenticated user.
+ * Retrieves products created by the authenticated admin user.
  *
  * Authentication:
- *   Requires a valid Bearer token in the Authorization header.
+ *   Requires a valid Bearer token in the Authorization header for a user with an 'admin' role.
  *
  * Response (200 - Success):
  * [
@@ -20,7 +20,7 @@ import { withAuth } from "@/lib/middleware/auth";
  *     "price": 99.99,
  *     "image": "image_url",
  *     "category": "Electronics",
- *     "userId": "authenticated_user_id"
+ *     "userId": "authenticated_admin_user_id"
  *   }
  * ]
  *
@@ -29,12 +29,17 @@ import { withAuth } from "@/lib/middleware/auth";
  *   "error": "Access denied. No token provided."
  * }
  *
+ * Response (403 - Forbidden):
+ * {
+ *   "error": "Forbidden: You do not have admin privileges."
+ * }
+ *
  * Response (500 - Server Error):
  * {
  *   "error": "Failed to fetch products"
  * }
  */
-export const GET = withAuth(async (request) => {
+export const GET = withAdminAuth(async (request) => {
   const userId = request.user?.id;
   try {
     await dbConnect();

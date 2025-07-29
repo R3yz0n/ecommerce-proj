@@ -51,6 +51,7 @@ export async function auth(request: Request) {
                 id: user._id.toString(),
                 email: user.email,
                 name: user.name,
+                role: user.role,
               },
             };
           } else {
@@ -126,6 +127,25 @@ export function withAuth(
     // Call the handler with the modified request
     return handler(requestWithUser, context);
   };
+}
+
+/**
+ * Middleware adapter for Next.js API routes that require admin privileges
+ * @param {Function} handler - The route handler function
+ * @returns {Function} Next.js API route handler with admin auth
+ */
+export function withAdminAuth(
+  handler: (request: Request & { user?: any }, context?: any) => Promise<Response>
+) {
+  return withAuth(async (request, context) => {
+    if (request.user?.role !== "admin") {
+      return NextResponse.json(
+        { error: "Forbidden: You do not have admin privileges." },
+        { status: 403 }
+      );
+    }
+    return handler(request, context);
+  });
 }
 
 export default withAuth;

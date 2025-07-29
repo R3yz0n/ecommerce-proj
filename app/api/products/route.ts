@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import dbConnect from "@/utils/dbConnect";
 import Product from "@/models/Product";
-import { withAuth } from "@/lib/middleware/auth";
+import { withAdminAuth } from "@/lib/middleware/auth";
 
 export async function GET(request: Request) {
   try {
@@ -16,10 +16,10 @@ export async function GET(request: Request) {
 /**
  * POST /api/products
  *
- * Creates a new product.
+ * Creates a new product. Only accessible by admins.
  *
  * Authentication:
- *   Requires a valid Bearer token in the Authorization header.
+ *   Requires a valid Bearer token in the Authorization header for a user with an 'admin' role.
  *
  * Request Body:
  * {
@@ -40,7 +40,7 @@ export async function GET(request: Request) {
  *     "price": 99.99,
  *     "image": "image_url",
  *     "category": "Electronics",
- *     "userId": "authenticated_user_id"
+ *     "userId": "authenticated_admin_user_id"
  *   }
  * }
  *
@@ -54,8 +54,13 @@ export async function GET(request: Request) {
  * {
  *   "error": "Access denied. No token provided."
  * }
+ *
+ * Response (403 - Forbidden):
+ * {
+ *   "error": "Forbidden: You do not have admin privileges."
+ * }
  */
-export const POST = withAuth(async (request) => {
+export const POST = withAdminAuth(async (request) => {
   await dbConnect();
   const body = await request.json();
   const userId = request.user.id; // Get userId from middleware
