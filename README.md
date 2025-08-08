@@ -1,5 +1,6 @@
 # Installing pnpm using npm
 
+
 pnpm is a fast, disk space-efficient package manager. You can install it using npm on various operating systems. Follow the instructions below for your platform.
 
 ## Prerequisites
